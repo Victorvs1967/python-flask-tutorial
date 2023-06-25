@@ -3,13 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href={{ url_for('static', fname='css/style.css') }}>
-  {% block title %}
-  <title>Blog Flask App</title>
-  {% endblock %}
+  <link rel="stylesheet" href={{ url_for('static', filename='css/style.css') }}>
+  <title>{% block title %}Blog Flask App{% endblock %}</title>
 </head>
 <body>
-{% block content %}
-{% endblock %}
+  <nav>
+    <div class="container navigation">
+      <a href="/">
+        <h1>Blog</h1>
+      </a>
+      <ul>
+        {% if g.user %}
+        <li><span>{{ g.user['username'] }}</span></li>
+        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        {% else %}
+        <li><a href="{{ url_for('auth.signup') }}">Sign Up</a></li>
+        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+  <section class="container content">
+    <header>
+      {% block header %}{% endblock %}
+    </header>
+
+    {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+  </section>
 </body>
 </html>
