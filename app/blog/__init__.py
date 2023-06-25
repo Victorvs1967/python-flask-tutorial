@@ -2,8 +2,8 @@ from curses import flash
 from bson import ObjectId
 from flask import Blueprint, abort, g, redirect, render_template, request, url_for
 
-from app.auth import login_required
 from app.db import get_db
+from app.auth import login_required
 from app.models import Post
 
 
@@ -12,9 +12,10 @@ blog = Blueprint('blog', __name__, static_folder='static', template_folder='temp
 @blog.route('/')
 def index():
   db = get_db()
-  posts = []
 
+  posts = []
   _posts = db.post.find({})
+
   for post in _posts:
     post['_id'] = str(post['_id'])
     posts.append(post)
@@ -27,14 +28,6 @@ def create():
   if request.method == 'POST':
     title = request.form['title']
     body = request.form['body']
-
-    post = Post(
-      title=title,
-      body=body,
-      author_id=g.user['_id'],
-      username=g.user['username']
-    )
-
     error = None
 
     if not title:
@@ -43,6 +36,12 @@ def create():
     if error is not None:
       flash(error)
     else:
+      post = Post(
+        title=title,
+        body=body,
+        author_id=g.user['_id'],
+        username=g.user['username']
+      )
       db = get_db()
       db.post.insert_one(post.__dict__)
       return redirect(url_for('index'))
@@ -72,6 +71,7 @@ def update(id):
   return render_template('update.html', post=post)
 
 @blog.route('/<id>/delete', methods=['POST'])
+@login_required
 def delete(id):
   get_post(id)
   db = get_db()

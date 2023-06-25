@@ -14,7 +14,6 @@ class Client:
     client = MongoClient(**config)
     return client[database]
 
-
 def get_db():
   if 'db' not in g:
     g.db = Client(current_app.config['DATABASE'])

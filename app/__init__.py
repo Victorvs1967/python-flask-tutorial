@@ -1,11 +1,9 @@
 import os
-from flask import Flask, g, render_template
-
-from .auth import auth
-from .blog import blog
+from flask import Flask
 
 
 def create_app(test_config=None):
+
   app = Flask(__name__, instance_relative_config=True)
   app.config.from_mapping(
     SECRET_KEY='dev',
@@ -21,6 +19,10 @@ def create_app(test_config=None):
     os.makedirs(app.instance_path)
   except OSError:
     pass
+
+
+  from .auth import auth
+  from .blog import blog
 
   app.register_blueprint(auth)
   app.register_blueprint(blog)

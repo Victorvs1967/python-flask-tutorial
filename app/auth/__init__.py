@@ -45,8 +45,8 @@ def login():
 
     db = get_db()
     error = None
-    user = db.user.find_one({'username': username})
 
+    user = db.user.find_one({'username': username})
     if user is None:
       error = 'Incorrect username.'
     elif not check_password_hash(user.get('password'), password):
@@ -55,8 +55,10 @@ def login():
     if error is None:
       g.user = user
       g.user['_id'] = str(g.user['_id'])
+
       session.clear()
       session['user_id'] = user.get('_id')
+
       return redirect(url_for('index'))
 
     flash(error)
@@ -66,10 +68,10 @@ def login():
 @auth.before_app_request
 def load_logged_in_user():
   user_id = session.get('user_id')
-  db = get_db()
   if user_id is None:
     g.user = None
   else:
+    db = get_db()
     g.user = db.user.find_one({'_id': ObjectId(user_id)})
 
 @auth.route('/logout')
