@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+
+  database:
+    container_name: db_container
+    image: "mongo:4.4.7"
+    hostname: host_db
+    volumes:
+      - ./data_db:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - backend
+
+  app:
+    build: .
+    container_name: app_container
+    environment:
+      - PYTHONUNBUFFERED=True
+    restart: on-failure
+    volumes:
+      - ./:/app
+    ports:
+      - 8000:8000
+    networks:
+      - backend
+    depends_on:
+      - database
+    command: gunicorn --reload -b 0.0.0.0:8000 main:"create_app()"
+
+networks:
+  backend:
+    external: false
+    name: backend
