@@ -7,6 +7,7 @@
 __pycache__/
 
 instance/
+data_db/
 
 .pytest_cach/
 .coverage
