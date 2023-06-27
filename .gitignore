@@ -7,12 +7,12 @@
 __pycache__/
 
 instance/
-data_db/
 
 .pytest_cach/
 .coverage
 htmlcov/
 
+data_db/
 dist/
 build/
 *.egg-info
