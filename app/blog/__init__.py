@@ -84,16 +84,15 @@ def delete(id):
 @blog.route('/<id>/show')
 def show(id):
   post = get_post(id, check_author=False)
-  _post_likes = post['likes']
-  post['likes'] = len([post for post in _post_likes if 1 in post.values()])
-  post['unlikes'] = len([post for post in _post_likes if 0 in post.values()])
+  post_likes = post['likes']
+  post['likes'] = len([post for post in post_likes if 1 in post.values()])
+  post['unlikes'] = len([post for post in post_likes if 0 in post.values()])
   return render_template('show.html', post=post)
 
 @blog.route('/<id>/show_like', endpoint='show_like')
 @blog.route('/<id>/like')
 @login_required
 def like(id):
-
   post = get_post(id, check_author=False)
   user_id = session.get('user_id')
 
@@ -110,7 +109,6 @@ def like(id):
   else:
     return redirect(url_for('index'))
   # return redirect(url_for('index'))
-
 
 @blog.route('/<id>/show_unlike', endpoint='show_unlike')
 @blog.route('/<id>/unlike')
@@ -132,7 +130,6 @@ def unlike(id):
   else:
     return redirect(url_for('index'))
   # return redirect(url_for('index'))
-
 
 def get_post(id, check_author=True) -> Post:
   post: Post = get_db().post.find_one({'_id': ObjectId(id)})

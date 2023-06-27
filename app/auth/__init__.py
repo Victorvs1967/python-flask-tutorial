@@ -30,6 +30,7 @@ def signup():
       user = User(username, password, email)
       if not db.user.find_one({'username': username}):
         db.user.insert_one(user.__dict__)
+        return redirect(url_for('auth.login'))
       else:
         error =  f'User {username} already exist...'
 
@@ -58,7 +59,6 @@ def login():
 
       session.clear()
       session['user_id'] = user.get('_id')
-
       return redirect(url_for('index'))
 
     flash(error)
