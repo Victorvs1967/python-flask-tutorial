@@ -68,7 +68,7 @@ def login():
 @auth.before_app_request
 def load_logged_in_user():
   user_id = session.get('user_id')
-  if user_id is None:
+  if user_id is None or ObjectId(user_id) is None:
     g.user = None
   else:
     db = get_db()

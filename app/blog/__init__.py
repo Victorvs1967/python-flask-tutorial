@@ -3,7 +3,7 @@ from flask import Blueprint, abort, g, redirect, render_template, request, sessi
 
 from app.db import get_db
 from app.auth import login_required
-from app.models import Post
+from app.models import Comment, Like, Post
 
 
 blog = Blueprint('blog', __name__, static_folder='static', template_folder='templates')
@@ -16,10 +16,11 @@ def index():
   posts = []
 
   for post in _posts:
-    post['_id'] = str(post['_id'])
-    _post_likes = post['likes']
-    post['likes'] = len([post for post in _post_likes if 1 in post.values()])
-    post['unlikes'] = len([post for post in _post_likes if 0 in post.values()])
+    post['_id'] = str(post.get('_id'))
+    _post_likes = post.get('likes')
+    post['likes'] = len([like for like in _post_likes if like.get('value') == 1])
+    post['unlikes'] = len([like for like in _post_likes if like.get('value') == 0])
+    post['comments'] = len(post.get('comments'))
     posts.append(post)
 
   return render_template('index.html', posts=posts)
@@ -81,13 +82,34 @@ def delete(id):
 
   return redirect(url_for('index'))
 
-@blog.route('/<id>/show')
+@blog.route('/<id>/show', methods=['GET', 'POST'])
 def show(id):
   post = get_post(id, check_author=False)
+  comments = get_comments(id)
+
+  if request.method == 'POST':
+    body = request.form['body']
+    error = None
+
+    if not body:
+      error = 'No comment to send.'
+    if error is not None:
+      flash(error)
+    else:
+      comment = Comment(
+        g.user['_id'],
+        body
+      )
+      comments.append(comment.__dict__)
+      get_db().post.update_one({ '_id': ObjectId(id) }, {'$set': { 'comments': comments}})
+
+    return redirect(url_for('blog.show', id=id))
+
   post_likes = post['likes']
   post['likes'] = len([post for post in post_likes if 1 in post.values()])
   post['unlikes'] = len([post for post in post_likes if 0 in post.values()])
-  return render_template('show.html', post=post)
+
+  return render_template('show.html', post=post, comments=comments)
 
 @blog.route('/<id>/show_like', endpoint='show_like')
 @blog.route('/<id>/like')
@@ -96,19 +118,18 @@ def like(id):
   post = get_post(id, check_author=False)
   user_id = session.get('user_id')
 
-  if len(post.get('likes')) > 0 and get_value(user_id, post.get('likes')) is not None and get_value(user_id, post.get('likes')) != 0:
+  if len(post.get('likes')) > 0 and is_liked(post, user_id):
     flash('You already liked this post.')
-  elif len(post.get('likes')) > 0 and get_value(user_id, post.get('likes')) is not None and get_value(user_id, post.get('likes')) == 0:
-    post.get('likes').remove(get_item(user_id, post.get('likes')))
+  elif len(post.get('likes')) > 0 and is_unliked(post, user_id):
+    post.get('likes').remove(get_like(post, user_id))
     get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'likes': post.get('likes')}})
   else:
-    post.get('likes').append({user_id: 1})
+    post.get('likes').append(Like(user_id, 1).__dict__)
     get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'likes': post.get('likes')}})
   if 'show_like' in request.endpoint:
     return redirect(url_for('blog.show', id=id))
   else:
     return redirect(url_for('index'))
-  # return redirect(url_for('index'))
 
 @blog.route('/<id>/show_unlike', endpoint='show_unlike')
 @blog.route('/<id>/unlike')
@@ -117,19 +138,26 @@ def unlike(id):
   post = get_post(id, check_author=False)
   user_id = session.get('user_id')
 
-  if len(post.get('likes')) > 0 and get_value(user_id, post.get('likes')) is not None and get_value(user_id, post.get('likes')) == 0:
+  if len(post.get('likes')) > 0 and is_unliked(post, user_id):
     flash('You already unliked this post.')
-  elif len(post.get('likes')) > 0 and get_value(user_id, post.get('likes')) is not None and get_value(user_id, post.get('likes')) != 0:
-    post.get('likes').remove(get_item(user_id, post.get('likes')))
-    get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'likes': post['likes']}})
+  elif len(post.get('likes')) > 0 and is_liked(post, user_id):
+    post.get('likes').remove(get_like(post, user_id))
+    get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'likes': post.get('likes')}})
   else:
-    post.get('likes').append({user_id: 0})
+    post.get('likes').append(Like(user_id, 0).__dict__)
     get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'likes': post.get('likes')}})
   if 'show_unlike' in request.endpoint:
     return redirect(url_for('blog.show', id=id))
   else:
     return redirect(url_for('index'))
-  # return redirect(url_for('index'))
+
+@blog.route('/<id>/comment_update', methods=['GET', 'POST'])
+def comment_update(id):
+  pass
+
+@blog.route('/<id>/comment_delete', methods=['GET'])
+def comment_delete(id):
+  pass
 
 def get_post(id, check_author=True) -> Post:
   post: Post = get_db().post.find_one({'_id': ObjectId(id)})
@@ -139,14 +167,28 @@ def get_post(id, check_author=True) -> Post:
     abort(403)
   return post
 
-def get_value(key, arr):
-  for _, item in enumerate(arr):
-    if key in item:
-      return item[key]
+def is_liked(post, user_id) -> bool:
+  for like in post.get('likes'):
+    if like.get('userId') == user_id and like.get('value') == 1:
+      return True
+  return False
+
+def is_unliked(post, user_id) -> bool:
+  for like in post.get('likes'):
+    if like.get('userId') == user_id and like.get('value') == 0:
+      return True
+  return False
+
+def get_like(post, user_id):
+  for like in post.get('likes'):
+    if like.get('userId') == user_id:
+      return like
   return None
 
-def get_item(key, arr):
-  for item in arr:
-    if key in item:
-      return item
-  return None
+def get_comments(post_id, comment_id=None):
+  post = get_db().post.find_one({'_id': ObjectId(post_id)})
+  if comment_id == None:
+    comments = [comment for comment in post.get('comments')]
+  else:
+    comments = [comment for comment in post.get('comments') if comment.get('_id') == comment_id]
+  return comments

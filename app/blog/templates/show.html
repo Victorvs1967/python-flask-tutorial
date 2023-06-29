@@ -18,5 +18,30 @@
     {{ post['likes'] }} <a href="{{ url_for('.show_like', id=post['_id']) }}" class="action">likes</a>
     {{ post['unlikes'] }} <a href="{{ url_for('.show_unlike', id=post['_id']) }}" class="action">unlikes</a>
   </p>
+  <h3 style="margin-top: 1rem; padding-left: 1rem;">Comments:</h3>
+  {% for comment in comments %}
+  <div>
+    <p class="comment-header">{{ comment['username'] }} on {{ comment['created'].strftime('%d/%m/%Y %H:%M') }} :</p>
+    <p class="comment">{{ comment['body'] }}</p>
+    {% if g.user['_id'] == comment['userId'] %}
+      <a href="{{ url_for('.comment_update', id=post['_id'], comment_id=comment['_id']) }}" class="action comment-header">Edit comment</a>
+      <a href="{{ url_for('.comment_delete', id=post['_id'], comment_id=comment['_id']) }}" class="action comment-header">Delete comment</a>
+    {% endif %}
+  </div>
+  {% if not loop.last %}
+  <hr>
+  {% endif %}
+  {% endfor %}
+
+  {% if g.user %}
+  <form method="POST" style="width: 100%; margin-top: 2rem; padding-left: 1rem; padding-top: 3rem;">
+    <label for="body">Leave your comment:</label>
+    <textarea name="body" id="body" cols="30" rows="6">{{ request.form['body'] or comments['body'] }}</textarea>
+    {% if comment %}
+    <input type="hidden" id="datetime" name="datetime" value="{ comments['created'] }" />
+    {% endif %}
+    <input type="submit" value="Send" />
+  </form>
+  {% endif %}
 </article>
 {% endblock %}

@@ -155,9 +155,25 @@ form > textarea {
 
 .post .about {
   color: #444;
+  font-size: 0.85em;
   font-style: italic;
 }
 
 .post .body {
   white-space: pre-line;
+}
+
+.comment {
+  margin-top: 0.2em;
+  padding-left: 1rem;
+  font-size: 1em;
+  color: #222;
+  white-space: pre-line;
+}
+
+.comment-header {
+  padding-left: 1rem;
+  font-size: 0.85em;
+  color: #377ba8;
+  font-style: italic;
 }

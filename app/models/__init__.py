@@ -1,4 +1,5 @@
 import datetime
+from uuid import uuid1
 from werkzeug.security import generate_password_hash
 
 
@@ -15,4 +16,35 @@ class Post:
     self.author_id = author_id
     self.username = username
     self.created = datetime.datetime.now()
-    self.likes = []
+    self.likes: list(Like) = []
+    self.comments: list(Comment) = []
+
+  def addLike(self, userId):
+    if len(self.likes) > 0:
+      for like in self.likes:
+        if like.userId == userId:
+          like.value = 1
+          break
+    else:
+      self.append(Like(userId, 1))
+
+  def addUnlike(self, userId):
+    if len(self.likes) > 0:
+      for like in self.likes:
+        if like.userId == userId:
+          like.value = 0
+          break
+    else:
+      self.append(Like(userId, 0))
+
+class Like:
+  def __init__(self, userId: str, value: 0 | 1 ):
+    self.userId = userId
+    self.value = value
+
+class Comment:
+  def __init__(self, userId: str, body: str):
+    self._id = str(uuid1().hex)
+    self.userId = userId
+    self.body = body
+    self.created = datetime.datetime.now()
