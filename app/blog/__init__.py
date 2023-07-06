@@ -20,7 +20,10 @@ def index():
     _post_likes = post.get('likes')
     post['likes'] = len([like for like in _post_likes if like.get('value') == 1])
     post['unlikes'] = len([like for like in _post_likes if like.get('value') == 0])
-    post['comments'] = len(post.get('comments'))
+    if post.get('comments'):
+      post['comments'] = len(post.get('comments'))
+    else:
+      post['comments'] = 0
     posts.append(post)
 
   return render_template('index.html', posts=posts)
@@ -223,8 +226,12 @@ def get_like(post, user_id):
 
 def get_comments(post_id, comment_id=None):
   post = get_db().post.find_one({'_id': ObjectId(post_id)})
-  if comment_id == None:
-    comments = [comment for comment in post.get('comments')]
+  if post.get('comments'):
+    if comment_id == None:
+      comments = [comment for comment in post.get('comments')]
+    else:
+      comments = [comment for comment in post.get('comments') if comment.get('_id') == comment_id]
   else:
-    comments = [comment for comment in post.get('comments') if comment.get('_id') == comment_id]
+    comments = []
+
   return comments
