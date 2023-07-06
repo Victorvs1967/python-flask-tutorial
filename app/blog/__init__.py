@@ -153,7 +153,43 @@ def unlike(id):
 
 @blog.route('/<id>/comment_update', methods=['GET', 'POST'])
 def comment_update(id):
-  pass
+  post = get_post(id, check_author=False)
+  comment_id = request.args.get('comment_id')
+  comments = get_comments(id)
+  comment = get_comments(id, comment_id)[0]
+
+  post_likes = post['likes']
+  post['likes'] = len([post for post in post_likes if 1 in post.values()])
+  post['unlikes'] = len([post for post in post_likes if 0 in post.values()])
+  post['comments'] = len([comment for comment in comments])
+
+  comments.remove(comment)
+
+
+  if comment.get('userId') != g.user['_id']:
+    abort(403)
+
+  if request.method == 'GET':
+    return render_template('update_comment.html', post=post, comments=comment)
+
+  if request.method == 'POST':
+    body = request.form['body']
+    error = None
+
+    if not body:
+      error = 'Comment is empty, consider deleting your comment.'
+
+    if error is not None:
+      flash(error)
+    else:
+      db = get_db()
+      comments.append(comment)
+      db.post.update_one({'_id': ObjectId(id)}, {'$set': {'comments': comments}})
+
+    print(id)
+
+    return redirect('blog.show', id=id)
+
 
 @blog.route('/<id>/comment_delete', methods=['GET'])
 def comment_delete(id):
