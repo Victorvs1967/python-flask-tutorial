@@ -15,7 +15,6 @@ def get_posts():
     all_post_likes = post.get('likes')
     post['likes'] = len([like for like in all_post_likes if like.get('value') == 1])
     post['unlikes'] = len([like for like in all_post_likes if like.get('value') == 0])
-    # post['comments'] = len([post for post in post.get('comments') if post.get('comments')])
     post['comments'] = len([post for post in post.get('comments')])
     posts.append(post)
 
@@ -37,11 +36,14 @@ def get_like(post, user_id):
 
 def get_comments(post_id, comment_id=None):
   post: Post = get_db().post.find_one({'_id': ObjectId(post_id)})
+
   if post.get('comments'):
     if comment_id == None:
       comments = [comment for comment in post.get('comments')]
     else:
       comments = [comment for comment in post.get('comments') if comment.get('_id') == comment_id]
+    for comment in comments:
+      comment['username'] = get_db().user.find_one({ '_id': ObjectId(comment['userId'])}).get('username')
   else:
     comments = []
 
