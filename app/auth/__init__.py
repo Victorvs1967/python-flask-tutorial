@@ -59,6 +59,7 @@ def login():
 
       session.clear()
       session['user_id'] = user.get('_id')
+
       return redirect(url_for('index'))
 
     flash(error)

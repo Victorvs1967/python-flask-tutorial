@@ -43,8 +43,9 @@ class Like:
     self.value = value
 
 class Comment:
-  def __init__(self, userId: str, body: str):
+  def __init__(self, userId: str, postId: str, body: str):
     self._id = str(uuid1().hex)
     self.userId = userId
+    self.postId = postId
     self.body = body
     self.created = datetime.datetime.now()

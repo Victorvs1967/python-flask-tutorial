@@ -26,6 +26,6 @@ def create_app(test_config=None):
 
   app.register_blueprint(auth)
   app.register_blueprint(blog)
-  app.add_url_rule('/', endpoint='index')
+  app.add_url_rule('/', endpoint='routes.index')
 
   return app
