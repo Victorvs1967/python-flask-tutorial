@@ -3,7 +3,7 @@ from flask import abort, g, redirect, render_template, request, session, url_for
 
 from app.db import get_db
 from app.auth import login_required
-from app.models import Comment, Like, Post
+from app.models import Comment, Like, Post, Tag
 
 from .services import *
 from . import blog
@@ -20,10 +20,16 @@ def create():
   if request.method == 'POST':
     title = request.form['title']
     body = request.form['body']
+    tags = request.form['tags']
     error = None
 
     if not title:
       error = 'Title is required.'
+
+    forbidden_chars = set('#[]()`?$%/\<>*')
+    forbidden_chars_nicetxt = ' '.join(list(forbidden_chars))
+    if any((c in forbidden_chars) for c in tags):
+      error = f'This characters {forbidden_chars_nicetxt} are not allowed in tags, please remove then'
 
     if error is not None:
       flash(error)
@@ -32,10 +38,10 @@ def create():
         title=title,
         body=body,
         author_id=g.user['_id'],
-        username=g.user['username']
+        username=g.user['username'],
+        tags=[Tag(x.strip()).__dict__ for x in tags.split(',')],
       )
-      db = get_db()
-      db.post.insert_one(post.__dict__)
+      get_db().post.insert_one(post.__dict__)
       return redirect(url_for('blog.index'))
 
   return render_template('create.html')
@@ -44,23 +50,33 @@ def create():
 @login_required
 def update(id):
   post = get_post(id)
+  tag_list = [tag['name'] for tag in get_tags(id)]
 
   if request.method == 'POST':
     title = request.form['title']
     body = request.form['body']
+    tags = request.form['tags']
     error = None
 
     if not title:
       error = 'Title is required.'
 
+    forbidden_chars = set('#[]()`?$%/\<>*')
+    forbidden_chars_nicetxt = ' '.join(list(forbidden_chars))
+    if any((c in forbidden_chars) for c in tags):
+      error = f'This characters {forbidden_chars_nicetxt} are not allowed in tags, please remove then'
+
     if error is not None:
       flash(error)
     else:
-      db = get_db()
-      db.post.update_one({'_id': ObjectId(id)}, {'$set': {'title': title, 'body': body}})
+      tags = [Tag(x.strip()).__dict__ for x in tags.split(',')]
+      get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'title': title, 'body': body, 'tags': tags}})
+
       return redirect(url_for('blog.index'))
 
-  return render_template('update.html', post=post)
+
+  tags_string = ', '.join(tag_list)
+  return render_template('update.html', post=post, tags=tags_string)
 
 @blog.route('/<id>/delete', methods=['POST'])
 @login_required
@@ -75,8 +91,9 @@ def delete(id):
 @blog.route('/<id>/show', methods=['GET', 'POST'])
 def show(id):
 
-  post = get_post(id, check_author=False)
+  post = get_post(id, False)
   comments = get_comments(id)
+  tags = get_tags(id)
 
   if request.method == 'POST':
     body = request.form['body']
@@ -101,7 +118,7 @@ def show(id):
   post['likes'] = len([post for post in post_likes if 1 in post.values()])
   post['unlikes'] = len([post for post in post_likes if 0 in post.values()])
 
-  return render_template('show.html', post=post, comments=comments)
+  return render_template('show.html', post=post, comments=comments, tags=tags)
 
 @blog.route('/<id>/show_like', endpoint='show_like')
 @blog.route('/<id>/like')
@@ -197,3 +214,8 @@ def comment_delete(id):
   get_db().post.update_one({ '_id': post['_id'] }, { '$set': { 'comments': comments }})
 
   return redirect(url_for('blog.show', id=id))
+
+@blog.route('/<tag_name>/show_tag', methods=['GET'])
+def show_tag(tag_name):
+  posts = get_posts(tag_name)
+  return render_template('index.html', posts=posts)

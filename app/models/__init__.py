@@ -10,7 +10,7 @@ class User:
     self.email = email
 
 class Post:
-  def __init__(self, title: str, body: str, author_id: str, username: str):
+  def __init__(self, title: str, body: str, author_id: str, username: str, tags = []):
     self.title = title
     self.body = body
     self.author_id = author_id
@@ -18,6 +18,7 @@ class Post:
     self.created = datetime.datetime.now()
     self.likes: list(Like) = []
     self.comments: list(Comment) = []
+    self.tags: list(Tag) = tags
 
   def addLike(self, userId):
     if len(self.likes) > 0:
@@ -26,7 +27,7 @@ class Post:
           like.value = 1
           break
     else:
-      self.append(Like(userId, 1))
+      self.likes.append(Like(userId, 1))
 
   def addUnlike(self, userId):
     if len(self.likes) > 0:
@@ -35,7 +36,7 @@ class Post:
           like.value = 0
           break
     else:
-      self.append(Like(userId, 0))
+      self.likes.append(Like(userId, 0))
 
 class Like:
   def __init__(self, userId: str, value: 0 | 1 ):
@@ -49,3 +50,8 @@ class Comment:
     self.postId = postId
     self.body = body
     self.created = datetime.datetime.now()
+
+class Tag:
+  def __init__(self, name):
+    self._id = str(uuid1().hex)
+    self.name = name

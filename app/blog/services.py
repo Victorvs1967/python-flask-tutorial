@@ -2,13 +2,17 @@ from bson import ObjectId
 from flask import abort, g
 
 from app.db import get_db
-from app.models import Comment, Like, Post
+from app.models import Post, User
 
 
-def get_posts():
+def get_posts(tag_name=None) -> Post:
 
-  db_posts = get_db().post.find({})
-  posts = []
+  if tag_name is None:
+    db_posts = get_db().post.find({})
+  else:
+    db_posts = [post for post in get_db().post.find({}) if get_tags(post['_id'], tag_name)]
+
+  posts: list(Post) = []
 
   for post in db_posts:
     post['_id'] = str(post.get('_id'))
@@ -24,9 +28,15 @@ def get_post(id, check_author=True) -> Post:
   post: Post = get_db().post.find_one({'_id': ObjectId(id)})
   if post is None:
     abort(404, f'Post id {id} does not exist.')
-  if check_author and post['author_id'] != g.user['_id']:
+  if check_author and g.user and post['author_id'] is g.user['_id']:
     abort(403)
   return post
+
+def get_user(id) -> User:
+  user: User = get_db().user.find_one({'_id': ObjectId(id)})
+  if user is None:
+    abort(404, f'User id {id} does not exist.')
+  return user
 
 def get_like(post, user_id):
   for like in post.get('likes'):
@@ -35,19 +45,28 @@ def get_like(post, user_id):
   return None
 
 def get_comments(post_id, comment_id=None):
-  post: Post = get_db().post.find_one({'_id': ObjectId(post_id)})
-
+  post = get_post(post_id)
   if post.get('comments'):
     if comment_id == None:
       comments = [comment for comment in post.get('comments')]
     else:
       comments = [comment for comment in post.get('comments') if comment.get('_id') == comment_id]
     for comment in comments:
-      comment['username'] = get_db().user.find_one({ '_id': ObjectId(comment['userId'])}).get('username')
+      comment['username'] = get_user(comment['userId']).get('username')
   else:
     comments = []
-
   return comments
+
+def get_tags(post_id, tag_name=None):
+  post = get_post(post_id, check_author=False)
+  if post.get('tags'):
+    if tag_name is None:
+      tags = [tag for tag in post.get('tags')]
+    else:
+      tags = [tag for tag in post.get('tags') if tag['name'] == tag_name]
+  else:
+    tags = []
+  return tags
 
 def is_liked(post, user_id) -> bool:
   for like in post.get('likes'):

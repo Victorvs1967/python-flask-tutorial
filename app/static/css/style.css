@@ -163,6 +163,21 @@ form > textarea {
   white-space: pre-line;
 }
 
+.post .tag {
+  margin: 0.2rem;
+  padding: 0.1rem .3rem;
+  font-size: 0.85em;
+  color: #999;
+  white-space: pre-line;
+  border: 1px solid #999;
+  border-radius: 6px;
+  float: left;
+}
+
+.post .tag:hover {
+  background-color: #bbb;
+}
+
 .comment {
   margin-top: 0.2em;
   padding-left: 1rem;

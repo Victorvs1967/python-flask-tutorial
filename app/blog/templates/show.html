@@ -18,10 +18,19 @@
     {{ post['likes'] }} <a href="{{ url_for('.show_like', id=post['_id']) }}" class="action">likes</a>
     {{ post['unlikes'] }} <a href="{{ url_for('.show_unlike', id=post['_id']) }}" class="action">unlikes</a>
   </p>
+  <h4 style="margin-bottom: .2rem;">Tags:</h4>
+  <div>
+    {% for tag in tags %}
+      <p class="tag"><a href="{{ url_for('.show_tag', tag_name=tag['name']) }}">{{ tag['name'] }}</a></p>
+    {% if loop.last %}
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div style="clear: both;"></div>
   <h3 style="margin-top: 1rem; padding-left: 1rem;">Comments:</h3>
   {% for comment in comments %}
   <div>
-    <p class="comment-header">{{ comment['username'] }} on {{ comment['created'].strftime('%d/%m/%Y %H:%M') }} :</p>
+    <p class="comment-header">by {{ comment['username'] }} on {{ comment['created'].strftime('%d/%m/%Y %H:%M') }} :</p>
     <p class="comment">{{ comment['body'] }}</p>
     {% if g.user['_id'] == comment['userId'] %}
       <a href="{{ url_for('.comment_update', id=post['_id'], comment_id=comment['_id']) }}" class="action comment-header">Edit comment</a>

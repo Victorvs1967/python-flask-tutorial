@@ -72,8 +72,7 @@ def load_logged_in_user():
   if user_id is None or ObjectId(user_id) is None:
     g.user = None
   else:
-    db = get_db()
-    g.user = db.user.find_one({'_id': ObjectId(user_id)})
+    g.user = get_db().user.find_one({ '_id': ObjectId(user_id) })
 
 @auth.route('/logout')
 def logout():
