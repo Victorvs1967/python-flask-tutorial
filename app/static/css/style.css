@@ -122,10 +122,8 @@ form > img {
 .searchform {
   width: 100%;
   margin: 0;
-  margin-left: 2em;
-  margin-right: 2em;
+  margin-right: 4em;
   padding: 0;
-  padding-top: 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -135,7 +133,6 @@ form > img {
 
 .searchform input[type=text] {
   width: 15rem;
-  margin-bottom: 0.5em;
   transition: width .4s ease-in-out;
 }
 
@@ -150,7 +147,7 @@ form > img {
 }
 
 .content {
-  padding: 4rem 1rem 1rem;
+  padding: 5rem 1rem 1rem;
 }
 
 .content > header {
