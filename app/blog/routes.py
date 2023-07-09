@@ -11,6 +11,7 @@ from . import blog
 
 @blog.route('/')
 def index():
+  session['search_string'] = ''
   posts = get_posts()
   return render_template('index.html', posts=posts)
 
@@ -218,4 +219,26 @@ def comment_delete(id):
 @blog.route('/<tag_name>/show_tag', methods=['GET'])
 def show_tag(tag_name):
   posts = get_posts(tag_name)
+  return render_template('index.html', posts=posts)
+
+@blog.route('/search', methods=['POST',])
+def search():
+
+  if request.method == 'POST':
+    search = request.form['searchbox']
+    if search == '':
+      return redirect(url_for('blog.index'))
+    session['search_string'] = search
+
+    # for SQL search
+    # search = search.replace['*', '%']
+    # search = search.replace[' ', '%']
+    # search = '%' + search + '%'
+    # search = search.replace[r'%%', '%']
+
+  else:
+    search = session['search_string']
+
+  posts = [post for post in get_posts() if search in post['title']]
+
   return render_template('index.html', posts=posts)

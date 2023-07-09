@@ -3,7 +3,7 @@ from pymongo import MongoClient
 
 
 config = {
-  # 'host': 'database', # for docker
+  # 'host': 'database', # database host for docker
   'host': 'localhost',
   'port': 27017,
   'username': '',
