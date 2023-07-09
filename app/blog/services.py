@@ -1,11 +1,14 @@
+from math import ceil
 from bson import ObjectId
-from flask import abort, g
+from flask import abort, g, request, render_template
 
 from app.db import get_db
 from app.models import Post, User
 
 
-def get_posts(tag_name=None) -> Post:
+POSTS_PER_PAGE = 4
+
+def get_posts(tag_name=None):
 
   if tag_name is None:
     db_posts = get_db().post.find({})
@@ -79,3 +82,24 @@ def is_unliked(post, user_id) -> bool:
     if like.get('userId') == user_id and like.get('value') == 0:
       return True
   return False
+
+def paginate(tag_name=None, search=None):
+  total_posts = len([post for post in get_posts()])
+  pages = ceil(total_posts / POSTS_PER_PAGE)
+  page = int(request.args.get('page', default=1))
+
+  if page > pages:
+    page = pages
+
+  limit = POSTS_PER_PAGE
+  offset = (page - 1) * POSTS_PER_PAGE
+
+  if tag_name is None:
+    if search is None:
+      posts = [post for post in get_posts()][offset:page*limit]
+    else:
+      posts = [post for post in get_posts() if search in post['title']][offset:page*limit]
+  else:
+    posts = [post for post in get_posts(tag_name)][offset:page*limit]
+
+  return render_template('index.html', posts=posts, tag_name=tag_name, pages=pages, page=page)

@@ -123,6 +123,9 @@ form > img {
   width: 100%;
   margin: 0;
   margin-left: 2em;
+  margin-right: 2em;
+  padding: 0;
+  padding-top: 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -137,7 +140,7 @@ form > img {
 }
 
 .searchform input[type=text]:focus {
-  width: 100%;
+  width: 50%;
 }
 
 .home-title {
@@ -226,4 +229,11 @@ form > img {
   font-size: 0.85em;
   color: #377ba8;
   font-style: italic;
+}
+
+.pagination {
+  width: 50%;
+  margin: auto;
+  padding-top: 1em;
+  text-align: center;
 }

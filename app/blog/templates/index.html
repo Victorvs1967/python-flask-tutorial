@@ -33,8 +33,30 @@
   </p>
 </article>
 {% if not loop.last %}
-<hr>
+  <hr>
 {% endif %}
 {% endfor %}
+
+{% if pages > 1 %}
+  <hr>
+  <div class="pagination">
+    {% if page > 1 %}
+      <a href="{{ url_for(request.endpoint, page=page-1, tag_name=tag_name) }}">&laquo;</a>
+    {% endif %}
+
+    {% for page_n in range([page-2, 1]|max, [page+3, pages+1]|min) %}
+      {% if page_n == page %}
+        <a class="active">{{ page_n }}</a>
+      {% else %}
+        <a href="{{ url_for(request.endpoint, page=page_n, tag_name=tag_name) }}">{{ page_n }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page < pages %}
+      <a href="{{ url_for(request.endpoint, page=page+1, tag_name=tag_name) }}">&raquo;</a>
+    {% endif %}
+    <p>Showing page {{ page }} of {{ pages }}</p>
+  </div>
+{% endif %}
+
 {% endif %}
 {% endblock %}
