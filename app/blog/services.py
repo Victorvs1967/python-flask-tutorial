@@ -7,6 +7,7 @@ from app.models import Post, User
 
 
 POSTS_PER_PAGE = 4
+ALLOWED_EXTENTIONS = [ 'png', 'jpg', 'jpeg', 'gif', 'tif', 'tiff' ]
 
 def get_posts(tag_name=None):
 
@@ -103,3 +104,6 @@ def paginate(tag_name=None, search=None):
     posts = [post for post in get_posts(tag_name)][offset:page*limit]
 
   return render_template('index.html', posts=posts, tag_name=tag_name, pages=pages, page=page)
+
+def allowed_file(filename):
+  return '.' in filename and filename.split('.', 1)[-1].lower() in ALLOWED_EXTENTIONS

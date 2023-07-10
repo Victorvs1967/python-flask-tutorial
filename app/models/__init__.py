@@ -10,15 +10,16 @@ class User:
     self.email = email
 
 class Post:
-  def __init__(self, title: str, body: str, author_id: str, username: str, tags = []):
+  def __init__(self, title: str, body: str, author_id: str, username: str, image: str, tags = []):
     self.title = title
     self.body = body
     self.author_id = author_id
     self.username = username
+    self.image = image
+    self.tags: list(Tag) = tags
     self.created = datetime.datetime.now()
     self.likes: list(Like) = []
     self.comments: list(Comment) = []
-    self.tags: list(Tag) = tags
 
   def addLike(self, userId):
     if len(self.likes) > 0:

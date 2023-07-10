@@ -1,5 +1,7 @@
+import os
+from uuid import uuid4
 from bson import ObjectId
-from flask import abort, g, redirect, render_template, request, session, url_for, flash
+from flask import abort, g, redirect, render_template, request, session, url_for, flash, current_app, send_from_directory
 
 from app.db import get_db
 from app.auth import login_required
@@ -21,6 +23,7 @@ def create():
     title = request.form['title']
     body = request.form['body']
     tags = request.form['tags']
+    filename = request.args.get('filename')
     error = None
 
     if not title:
@@ -31,12 +34,24 @@ def create():
     if any((c in forbidden_chars) for c in tags):
       error = f'This characters {forbidden_chars_nicetxt} are not allowed in tags, please remove then'
 
+    if 'file' in request.files:
+      image_file = request.files['file']
+      print(f'image_file: {image_file}')
+      if image_file.filename == '' and not filename:
+        filename = ''
+      elif allowed_file(image_file.filename):
+        filename = str(f'{uuid4()}_{image_file.filename}')
+        image_file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+      elif not filename:
+        error = 'File extention not applowed.'
+
     if error is not None:
       flash(error)
     else:
       post = Post(
         title=title,
         body=body,
+        image = filename,
         author_id=g.user['_id'],
         username=g.user['username'],
         tags=[Tag(x.strip()).__dict__ for x in tags.split(',')],
@@ -45,6 +60,54 @@ def create():
       return redirect(url_for('blog.index'))
 
   return render_template('create.html')
+
+@blog.route('/id/update_image', endpoint='update_image', methods=['POST', ])
+@blog.route('/id/delete_image', endpoint='delete_image', methods=['POST', ])
+@blog.route('/update_image', endpoint='update_image', methods=['POST', ])
+@blog.route('/delete_image', endpoint='delete_image', methods=['POST', ])
+@login_required
+def update_while_create_or_update(id=None):
+
+  mode = request.args.get('mode')
+
+  if mode == 'update':
+    post = get_post(id)
+
+  if request.method == 'POST':
+    tags = request.form['tags']
+
+  if id is not None:
+    tags = get_posts(id)
+    error = None
+
+    if mode == 'create':
+      filename = request.args.get('filename')
+    elif mode == 'update':
+      filename = post['filename']
+    if 'delete_image' in request.endpoint:
+      filename = ''
+    if 'update_image' in request.endpoint:
+      if 'file' in request.files:
+        image_file = request.files['file']
+        if image_file.filename != '':
+          if allowed_file(image_file.filename):
+            filename = str(f'{uuid4()}_{image_file.filename}')
+            image_file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+          else:
+            error = 'File extention not applowed.'
+
+    if error is not None:
+      flash(error)
+    else:
+      if mode == 'update':
+        get_db().post.update_one({ '$set': { '_id': ObjectId(id) } })
+
+      post = get_post(id)
+
+      if mode == 'update':
+        return render_template('update.html', post=post, tags=tags)
+      if mode == 'create':
+        return render_template('create.html', filename=filename)
 
 @blog.route('/<id>/update', methods=['GET', 'POST'])
 @login_required
@@ -66,11 +129,27 @@ def update(id):
     if any((c in forbidden_chars) for c in tags):
       error = f'This characters {forbidden_chars_nicetxt} are not allowed in tags, please remove then'
 
+    filename = ''
+    if 'image' in post:
+      filename = post['image']
+    else:
+      post['image'] = filename
+
+    if 'file' in request.files:
+      image_file = request.files['file']
+      if image_file.filename == '' and filename == '':
+        filename = ''
+      elif allowed_file(image_file.filename):
+        filename = str(f'{uuid4()}_{image_file.filename}')
+        image_file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+      elif image_file.filename != '':
+        error = 'File extention not applowed.'
+
     if error is not None:
       flash(error)
     else:
       tags = [Tag(x.strip()).__dict__ for x in tags.split(',')]
-      get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'title': title, 'body': body, 'tags': tags}})
+      get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'title': title, 'body': body, 'tags': tags, 'image': filename}})
 
       return redirect(url_for('blog.index'))
 
@@ -82,11 +161,17 @@ def update(id):
 @login_required
 def delete(id):
 
-  get_post(id)
-  db = get_db()
-  db.post.delete_one({'_id': ObjectId(id)})
+  post = get_post(id)
 
-  return redirect(url_for('index'))
+  if 'image' not in post:
+    post['image'] = ''
+
+  if post['image'] != '':
+    os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], post['image']))
+
+  get_db().post.delete_one({'_id': ObjectId(id)})
+
+  return redirect(url_for('blog.index'))
 
 @blog.route('/<id>/show', methods=['GET', 'POST'])
 def show(id):
@@ -218,6 +303,10 @@ def comment_delete(id):
 @blog.route('/<tag_name>/show_tag', methods=['GET'])
 def show_tag(tag_name):
   return paginate(tag_name=tag_name, search=None)
+
+@blog.route('/uploaded_image/<filename>')
+def uploaded_image(filename):
+  return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
 @blog.route('/search', methods=['GET', 'POST'])
 def search():

@@ -75,6 +75,10 @@ form {
   background-color: #fafafa;
 }
 
+.post-form {
+  width: 100%;
+}
+
 form > input {
   padding: 1rem;
   font-size: 1.6rem;
@@ -147,7 +151,7 @@ form > img {
 }
 
 .content {
-  padding: 5rem 1rem 1rem;
+  padding: 6rem 1rem 1rem;
 }
 
 .content > header {
@@ -163,7 +167,7 @@ form > img {
 }
 
 .content hr {
-  margin: 1rem 0 2rem;
+  margin: 1rem 0 1rem;
 }
 
 .flash {
