@@ -23,7 +23,7 @@
    <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
   {% elif editMode == 'html' %}
     <textarea name="body" id="body" style="display: none;">{{ request.form['body'] or post['body'] }}</textarea>
-    <div style="border: 1px solid #555; padding: 5px 3px; margin-bottom: 5px;;">{{ html|safe }}</div>
+    <div style="border: 1px solid #aaa; padding: 5px 3px; margin-bottom: 5px; border-radius: .5rem;">{{ html|safe }}</div>
   {% endif %}
   <div class="btn-group">
   {% if editMode == 'MD' %}
@@ -36,10 +36,9 @@
   </div>
   <label for="tags">Add your tags (comma separated):</label>
   <textarea name="tags" id="tags" style="min-height: 3em;">{{ request.form['tags'] or tags }}</textarea>
-  <input type="submit" value="Save" />
-</form>
-<hr>
-<form class="danger post-form" action="{{ url_for('blog.delete', id=post['_id']) }}" method="POST">
-  <input type="submit" class="danger" value="Delete" onclick="return confirm('Are you sure?');" />
+  <div class="btn-group">
+    <input type="submit" value="Save" />
+    <input type="submit" class="danger" value="Delete" formaction="{{ url_for('blog.delete', id=post['_id']) }}" onclick="return confirm('Are you sure?');" />
+  </div>
 </form>
 {% endblock %}
