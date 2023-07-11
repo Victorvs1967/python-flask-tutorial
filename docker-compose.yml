@@ -15,8 +15,8 @@ services:
 
   app:
     container_name: app_container
-    image: victorvsm/blog_app:last
-    # build: .
+    # image: victorvsm/blog_app:last
+    build: .
     environment:
       - PYTHONUNBUFFERED=True
       - DATABASE=database
