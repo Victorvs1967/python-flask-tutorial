@@ -1,10 +1,14 @@
+import os
 from flask import current_app, g
 from pymongo import MongoClient
 
+if os.getenv('DATABASE'):
+  database = os.getenv('DATABASE')
+else:
+  database = 'localhost'
 
 config = {
-  # 'host': 'database', # for docker
-  'host': 'localhost',
+  'host': database,
   'port': 27017,
   'username': '',
   'password': '',

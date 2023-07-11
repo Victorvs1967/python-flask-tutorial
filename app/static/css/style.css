@@ -44,6 +44,9 @@ a {
 nav {
   width: 100%;
   padding: 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
   border-bottom: 2px solid rgba(0, 0, 0, .25);
   background-color: #fafafa;
 }
@@ -59,6 +62,16 @@ nav {
   gap: 2rem;
 }
 
+.header-menu,
+.header-menu > ul {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 2rem;
+}
+
+
+
 form {
   width: 60rem;
   margin: 0 auto;
@@ -72,6 +85,10 @@ form {
   background-color: #fafafa;
 }
 
+.post-form {
+  width: 100%;
+}
+
 form > input {
   padding: 1rem;
   font-size: 1.6rem;
@@ -80,7 +97,21 @@ form > input {
   border: 1px solid #aaa;
 }
 
+form > .btn-group > input {
+  padding: 1rem;
+  font-size: 1.6rem;
+  border-radius: .6rem;
+  outline: none;
+  border: 1px solid #aaa;
+}
+
 form > input[type="submit"] {
+  margin-top: 2rem;
+  align-self: center;
+  min-width: 10em;
+}
+
+form > .btn-group > input[type="submit"] {
   margin-top: 2rem;
   align-self: center;
   min-width: 10em;
@@ -105,6 +136,38 @@ form > textarea {
   font-size: 1.6rem;
 }
 
+form > img {
+  max-width: 80rem;
+  max-height: 80rem;
+  width: auto;
+  height: auto;
+  margin-top: 0.3rem;
+  align-self: center;
+  float: 0 0 auto;
+  border: 1px solid #377ba8;
+}
+
+.searchform {
+  /* width: 100%; */
+  margin: 0;
+  /* margin-right: 4em; */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  border: none;
+  background: none;
+}
+
+.searchform input[type=text] {
+  width: 15rem;
+  transition: width .4s ease-in-out;
+}
+
+.searchform input[type=text]:focus {
+  width: 80%;
+}
+
 .home-title {
   font-size: 6rem;
   text-align: center;
@@ -112,7 +175,7 @@ form > textarea {
 }
 
 .content {
-  padding: 0 1rem 1rem;
+  padding: 6rem 1rem 1rem;
 }
 
 .content > header {
@@ -128,7 +191,7 @@ form > textarea {
 }
 
 .content hr {
-  margin: 1rem 0 2rem;
+  margin: 1rem 0 1rem;
 }
 
 .flash {
@@ -163,6 +226,21 @@ form > textarea {
   white-space: pre-line;
 }
 
+.post .tag {
+  margin: 0.2rem;
+  padding: 0.1rem 1rem;
+  font-size: 0.85em;
+  color: #999;
+  white-space: pre-line;
+  border: 1px solid #999;
+  border-radius: 1.6rem;
+  float: left;
+}
+
+.post .tag:hover {
+  background-color: #bbb;
+}
+
 .comment {
   margin-top: 0.2em;
   padding-left: 1rem;
@@ -176,4 +254,18 @@ form > textarea {
   font-size: 0.85em;
   color: #377ba8;
   font-style: italic;
+}
+
+.pagination {
+  width: 50%;
+  margin: auto;
+  padding-top: 1em;
+  text-align: center;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
 }

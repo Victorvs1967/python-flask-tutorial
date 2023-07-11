@@ -8,6 +8,7 @@ def create_app(test_config=None):
   app.config.from_mapping(
     SECRET_KEY='dev',
     DATABASE='blog_db',
+    UPLOAD_FOLDER=os.path.join(app.instance_path, 'images'),
   )
 
   if test_config is None:
@@ -16,7 +17,7 @@ def create_app(test_config=None):
     app.config.from_mapping(test_config)
 
   try:
-    os.makedirs(app.instance_path)
+    os.makedirs(os.path.join(app.instance_path, 'images'))
   except OSError:
     pass
 
@@ -26,6 +27,6 @@ def create_app(test_config=None):
 
   app.register_blueprint(auth)
   app.register_blueprint(blog)
-  app.add_url_rule('/', endpoint='index')
+  app.add_url_rule('/', endpoint='routes.index')
 
   return app
