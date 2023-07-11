@@ -25,7 +25,8 @@
   {% if 'image' in post and post['image'] != '' %}
     <img src="{{ url_for('blog.uploaded_image', filename=post['image']) }}" alt="Post image" width="200">
   {% endif %}
-  <p class="body">{{ post['body'] }}</p>
+  <div style="padding: 5px 3px; margin-bottom: 5px;">{{ post['html']|safe }}</div>
+  <!-- <p class="body">{{ post['body'] }}</p> -->
   <p class="about">
     {{ post['likes'] }} <a href="{{ url_for('blog.like', id=post['_id']) }}" class="action">likes</a>,
     {{ post['unlikes'] }} <a href="{{ url_for('blog.unlike', id=post['_id']) }}" class="action">unlikes</a>,

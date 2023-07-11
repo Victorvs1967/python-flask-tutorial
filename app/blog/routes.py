@@ -1,4 +1,5 @@
 import os
+import markdown
 from uuid import uuid4
 from bson import ObjectId
 from flask import abort, g, redirect, render_template, request, session, url_for, flash, current_app, send_from_directory
@@ -19,6 +20,7 @@ def index():
 @blog.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
+
   if request.method == 'POST':
     title = request.form['title']
     body = request.form['body']
@@ -51,24 +53,36 @@ def create():
       post = Post(
         title=title,
         body=body,
-        image = filename,
+        image=filename,
         author_id=g.user['_id'],
         username=g.user['username'],
-        tags=[Tag(x.strip()).__dict__ for x in tags.split(',')],
       )
+      post.tags = [Tag(x.strip()).__dict__ for x in tags.split(',')]
+      post.html = markdown.markdown(body)
       get_db().post.insert_one(post.__dict__)
       return redirect(url_for('blog.index'))
 
   return render_template('create.html')
 
-@blog.route('/id/update_image', endpoint='update_image', methods=['POST', ])
-@blog.route('/id/delete_image', endpoint='delete_image', methods=['POST', ])
+@blog.route('/<id>/update_image', endpoint='update_image', methods=['POST', ])
+@blog.route('/<id>/delete_image', endpoint='delete_image', methods=['POST', ])
 @blog.route('/update_image', endpoint='update_image', methods=['POST', ])
 @blog.route('/delete_image', endpoint='delete_image', methods=['POST', ])
+@blog.route('/<id>/to_markdown', endpoint='to_markdown', methods=['POST', ])
+@blog.route('/<id>/to_html', endpoint='to_html', methods=['POST', ])
+@blog.route('/to_markdown', endpoint='to_markdown', methods=['POST', ])
+@blog.route('/to_html', endpoint='to_html', methods=['POST', ])
 @login_required
 def update_while_create_or_update(id=None):
 
   mode = request.args.get('mode')
+  body = request.form['body']
+  html = markdown.markdown(body)
+
+  if 'editMode' in request.args:
+    editMode = request.args.get('editMode')
+  else:
+    editMode = 'MD'
 
   if mode == 'update':
     post = get_post(id)
@@ -76,16 +90,17 @@ def update_while_create_or_update(id=None):
   if request.method == 'POST':
     tags = request.form['tags']
 
-  if id is not None:
-    tags = get_posts(id)
+    tags = get_tags(id)
     error = None
 
     if mode == 'create':
       filename = request.args.get('filename')
     elif mode == 'update':
-      filename = post['filename']
+      filename = post['image']
+
     if 'delete_image' in request.endpoint:
       filename = ''
+
     if 'update_image' in request.endpoint:
       if 'file' in request.files:
         image_file = request.files['file']
@@ -96,18 +111,25 @@ def update_while_create_or_update(id=None):
           else:
             error = 'File extention not applowed.'
 
+    if 'to_html' in request.endpoint:
+      editMode = 'html'
+
+    if 'to_markdown' in request.endpoint:
+      editMode = 'MD'
+
     if error is not None:
       flash(error)
     else:
       if mode == 'update':
-        get_db().post.update_one({ '$set': { '_id': ObjectId(id) } })
+        get_db().post.update_one({ '_id': ObjectId(id) }, { '$set': { 'image': filename } })
 
-      post = get_post(id)
+        post = get_post(id)
 
-      if mode == 'update':
-        return render_template('update.html', post=post, tags=tags)
-      if mode == 'create':
-        return render_template('create.html', filename=filename)
+    if mode == 'update':
+      return render_template('update.html', post=post, tags=tags, html=html, editMode=editMode)
+    if mode == 'create':
+      return render_template('create.html', filename=filename, html=html, editMode=editMode)
+
 
 @blog.route('/<id>/update', methods=['GET', 'POST'])
 @login_required
@@ -149,10 +171,19 @@ def update(id):
       flash(error)
     else:
       tags = [Tag(x.strip()).__dict__ for x in tags.split(',')]
-      get_db().post.update_one({'_id': ObjectId(id)}, {'$set': {'title': title, 'body': body, 'tags': tags, 'image': filename}})
+      html = markdown.markdown(body)
+
+      fields = {
+        'title': title,
+        'body': body,
+        'html': html,
+        'tags': tags,
+        'image': filename
+      }
+
+      get_db().post.update_one({'_id': ObjectId(id)}, {'$set': fields })
 
       return redirect(url_for('blog.index'))
-
 
   tags_string = ', '.join(tag_list)
   return render_template('update.html', post=post, tags=tags_string)

@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% block content %}
+{% if editMode is not defined %}
+  {% set editMode = 'MD' %}
+{% endif %}
 <form class="post-form" method="POST" action="{{ url_for('blog.update', id=post['_id']) }}" enctype="multipart/form-data">
   <label for="title">Title</label>
   <input type="text" name="title" id="title" value="{{ request.form['title'] or post['title'] }}" required />
@@ -16,7 +19,21 @@
   <input type="file" name="file" />
   <input type="submit" formaction="{{ url_for('blog.update_image', id=post['_id'], mode='update') }}" value="Upload image now" />
   <label for="body">Body</label>
-  <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
+  {% if editMode == 'MD' %}
+   <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
+  {% elif editMode == 'html' %}
+    <textarea name="body" id="body" style="display: none;">{{ request.form['body'] or post['body'] }}</textarea>
+    <div style="border: 1px solid #555; padding: 5px 3px; margin-bottom: 5px;;">{{ html|safe }}</div>
+  {% endif %}
+  <div class="btn-group">
+  {% if editMode == 'MD' %}
+    <input type="submit" value="Edit Markdown" class="display: inline-block" formaction="{{ url_for('blog.to_markdown', id=post['_id'], mode='update', filename=filename) }}" disabled />
+    <input type="submit" value="Preview" class="display: inline-block" formaction="{{ url_for('blog.to_html', id=post['_id'], mode='update', filename=filename) }}" />
+  {% elif editMode == 'html' %}
+    <input type="submit" value="Edit Markdown" class="display: inline-block" formaction="{{ url_for('blog.to_markdown', id=post['_id'], mode='update', filename=filename) }}" />
+    <input type="submit" value="Preview" class="display: inline-block" formaction="{{ url_for('blog.to_html', id=post['_id'], mode='update', filename=filename) }}" disabled />
+  {% endif %}
+  </div>
   <label for="tags">Add your tags (comma separated):</label>
   <textarea name="tags" id="tags" style="min-height: 3em;">{{ request.form['tags'] or tags }}</textarea>
   <input type="submit" value="Save" />

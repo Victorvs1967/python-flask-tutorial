@@ -1,26 +1,43 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %}New Post{% endblock %}</h1>
+  <h1>{% block title %}New Post{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-<form class="post-form" method="POST" action="{{ url_for('blog.create', filename=filename) }}" enctype="multipart/form-data">
-  <label for="title">Title</label>
-  <input type="text" name="title" id="title" value="{{ request.form['title'] }}" required />
-  {% if filename %}
-  <img src="{{ url_for('blog.upload_image', filename=filename) }}" alt="image">
-  <input class="danger" type="submit" formaction="{{ url_for('blog.delete_image', id=None, mode='create') }}" value="Delete image" />
-  {% else %}
-    {% set filename = '' %}
+  {% if editMode is not defined %}
+    {% set editMode = 'MD' %}
   {% endif %}
-  <label for="file">Image</label>
-  <input type="file" name="file" />
-  <input type="submit" formaction="{{ url_for('blog.update_image', id=None, mode='create', filename=filename) }}" value="Update image now" />
-  <label for="body">Body</label>
-  <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
-  <label for="tags">Add your tags (comma separated):</label>
-  <textarea name="tags" id="tags" style="min-height: 3em;">{{ request.form['tags'] }}</textarea>
-  <input type="submit" value="Save" />
-</form>
+  <form class="post-form" method="POST" action="{{ url_for('blog.create', filename=filename) }}" enctype="multipart/form-data">
+    <label for="title">Title</label>
+    <input type="text" name="title" id="title" value="{{ request.form['title'] }}" required />
+    {% if filename %}
+      <img src="{{ url_for('blog.upload_image', filename=filename) }}" alt="image">
+      <input class="danger" type="submit" formaction="{{ url_for('blog.delete_image', id=None, mode='create') }}" value="Delete image" />
+    {% else %}
+      {% set filename = '' %}
+    {% endif %}
+    <label for="file">Image</label>
+    <input type="file" name="file" />
+    <input type="submit" formaction="{{ url_for('blog.update_image', id=None, mode='create', filename=filename) }}" value="Update image now" />
+    <label for="body">Body</label>
+    {% if editMode == 'MD' %}
+      <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
+    {% elif editMode == 'html' %}
+      <textarea name="body" id="body" style="display: none;">{{ request.form['body'] }}</textarea>
+      <div style="border: 1px solid #555; padding: 5px 3px; margin-bottom: 5px;">{{ html|safe }}</div>
+    {% endif %}
+    <div class="btn-group">
+    {% if editMode == 'MD' %}
+      <input type="submit" value="Edit Markdown" class="display: inline-block" formaction="{{ url_for('blog.to_markdown', id=None, mode='create', filename=filename) }}" disabled />
+      <input type="submit" value="Preview" class="display: inline-block" formaction="{{ url_for('blog.to_html', id=None, mode='create', filename=filename) }}" />
+    {% elif editMode == 'html' %}
+      <input type="submit" value="Edit Markdown" class="display: inline-block" formaction="{{ url_for('blog.to_markdown', id=None, mode='create', filename=filename) }}" />
+      <input type="submit" value="Preview" class="display: inline-block" formaction="{{ url_for('blog.to_html', id=None, mode='create', filename=filename) }}" disabled />
+    {% endif %}
+    </div>
+    <label for="tags">Add your tags (comma separated):</label>
+    <textarea name="tags" id="tags" style="min-height: 3em;">{{ request.form['tags'] }}</textarea>
+    <input type="submit" value="Save" />
+  </form>
 {% endblock %}

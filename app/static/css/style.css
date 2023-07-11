@@ -87,7 +87,21 @@ form > input {
   border: 1px solid #aaa;
 }
 
+form > .btn-group > input {
+  padding: 1rem;
+  font-size: 1.6rem;
+  border-radius: .6rem;
+  outline: none;
+  border: 1px solid #aaa;
+}
+
 form > input[type="submit"] {
+  margin-top: 2rem;
+  align-self: center;
+  min-width: 10em;
+}
+
+form > .btn-group > input[type="submit"] {
   margin-top: 2rem;
   align-self: center;
   min-width: 10em;
@@ -141,7 +155,7 @@ form > img {
 }
 
 .searchform input[type=text]:focus {
-  width: 50%;
+  width: 80%;
 }
 
 .home-title {
@@ -237,4 +251,11 @@ form > img {
   margin: auto;
   padding-top: 1em;
   text-align: center;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
 }
