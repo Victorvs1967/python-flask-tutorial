@@ -13,18 +13,20 @@
       <a href="/">
         <h1>Blog</h1>
       </a>
-      <form class="searchform" action="{{ url_for('blog.search') }}" method="POST">
-        <input type="text" name="searchbox" placeholder="Search..." value="{{ session['search_string'] }}" />
-      </form>
-      <ul>
-        {% if g.user %}
-        <li><span>{{ g.user['username'] }}</span></li>
-        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
-        {% else %}
-        <li><a href="{{ url_for('auth.signup') }}">Sign Up</a></li>
-        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
-        {% endif %}
-      </ul>
+      <div class="header-menu">
+        <form class="searchform" action="{{ url_for('blog.search') }}" method="POST">
+          <input type="text" name="searchbox" placeholder="Search..." value="{{ session['search_string'] }}" />
+        </form>
+        <ul>
+          {% if g.user %}
+          <li><span>{{ g.user['username'] }}</span></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+          {% else %}
+          <li><a href="{{ url_for('auth.signup') }}">Sign Up</a></li>
+          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
   </nav>
   <section class="container content">

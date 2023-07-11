@@ -19,6 +19,7 @@ services:
     # build: .
     environment:
       - PYTHONUNBUFFERED=True
+      - DATABASE=database
     restart: on-failure
     volumes:
       - ./:/app

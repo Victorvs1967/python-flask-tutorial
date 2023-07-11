@@ -62,6 +62,16 @@ nav {
   gap: 2rem;
 }
 
+.header-menu,
+.header-menu > ul {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 2rem;
+}
+
+
+
 form {
   width: 60rem;
   margin: 0 auto;

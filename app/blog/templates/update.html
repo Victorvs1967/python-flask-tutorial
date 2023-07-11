@@ -37,8 +37,8 @@
   <label for="tags">Add your tags (comma separated):</label>
   <textarea name="tags" id="tags" style="min-height: 3em;">{{ request.form['tags'] or tags }}</textarea>
   <div class="btn-group">
-    <input type="submit" value="Save" />
     <input type="submit" class="danger" value="Delete" formaction="{{ url_for('blog.delete', id=post['_id']) }}" onclick="return confirm('Are you sure?');" />
+    <input type="submit" value="Save" />
   </div>
 </form>
 {% endblock %}
