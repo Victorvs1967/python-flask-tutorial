@@ -10,12 +10,12 @@ class User:
     self.email = email
 
 class Post:
-  def __init__(self, title: str, body: str, author_id: str, username: str, image: str):
+  def __init__(self, title: str, body: str, author_id: str, username: str):
     self.title = title
     self.body = body
     self.author_id = author_id
     self.username = username
-    self.image = image
+    self.image = ''
     self.html = ''
     self.tags: list(Tag) = []
     self.likes: list(Like) = []

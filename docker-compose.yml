@@ -29,7 +29,7 @@ services:
       - backend
     depends_on:
       - database
-    command: gunicorn --reload -b 0.0.0.0:8000 main:"create_app()"
+    command: gunicorn --reload -b 0.0.0.0:8000 app:"create_app()"
 
 networks:
   backend:

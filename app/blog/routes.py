@@ -53,12 +53,12 @@ def create():
       post = Post(
         title=title,
         body=body,
-        image=filename,
         author_id=g.user['_id'],
         username=g.user['username'],
       )
       post.tags = [Tag(x.strip()).__dict__ for x in tags.split(',')]
       post.html = markdown.markdown(body)
+      post.image = filename
       get_db().post.insert_one(post.__dict__)
       return redirect(url_for('blog.index'))
 
