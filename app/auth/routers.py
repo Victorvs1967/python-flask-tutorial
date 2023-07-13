@@ -25,13 +25,12 @@ def signup():
       error = 'Password is required.'
     elif not email:
       error = 'Email is required.'
+    elif db.user.find_one({'username': username}) is not None:
+      error =  f'User {username} already exist...'
 
     if error is None:
       user = User(username, password, email)
-      if not db.user.find_one({'username': username}):
-        db.user.insert_one(user.__dict__)
-      else:
-        error =  f'User {username} already exist...'
+      db.user.insert_one(user.__dict__)
       return redirect(url_for('auth.login'))
 
     flash(error)
@@ -44,21 +43,17 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    db = get_db()
     error = None
+    user = get_db().user.find_one({'username': username})
 
-    user = db.user.find_one({'username': username})
     if user is None:
       error = 'Incorrect username.'
     elif not check_password_hash(user.get('password'), password):
       error = 'Incorrect password.'
 
     if error is None:
-      g.user = user
-      g.user['_id'] = str(g.user['_id'])
-
       session.clear()
-      session['user_id'] = user.get('_id')
+      session['user_id'] = str(user.get('_id'))
 
       return redirect(url_for('blog.index'))
 
