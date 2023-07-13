@@ -14,15 +14,15 @@ services:
       - backend
 
   app:
+    image: victorvsm/blog_app:last
+    # build: .
     container_name: app_container
-    # image: victorvsm/blog_app:last
-    build: .
     environment:
       - PYTHONUNBUFFERED=True
       - DATABASE=database
     restart: on-failure
     volumes:
-      - ./:/app
+      - ./:/instance
     ports:
       - 8000:8000
     networks:

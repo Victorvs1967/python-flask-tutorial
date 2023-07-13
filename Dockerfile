@@ -1,8 +1,8 @@
 FROM python:3.11
 
-WORKDIR /app
-COPY requirements.txt /app
+WORKDIR /backend
+COPY requirements.txt /backend
 RUN pip3 install -U pip -r requirements.txt
-COPY . /app
+COPY . /backend
 
 EXPOSE 8000

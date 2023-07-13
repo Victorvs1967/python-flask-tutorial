@@ -16,3 +16,4 @@ data_db/
 dist/
 build/
 *.egg-info
+app/__pycache__/__init__.cpython-311.pyc
