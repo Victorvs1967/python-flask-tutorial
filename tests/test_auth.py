@@ -12,12 +12,13 @@ def test_signup(client, app):
   with app.app_context():
     assert get_db().user.find_one({ 'username': 'u' }) is not None
 
-@pytest.mark.parametrize(('username', 'password', 'email', 'message'), (
-  ('', '', '', b'Username is required.'),
+@pytest.mark.parametrize(
+  ('username', 'password', 'email', 'message'),
+  (('', '', '', b'Username is required.'),
   ('u', '', '', b'Password is required.'),
   ('u', 'p', '', b'Email is required.'),
-  ('test', 'password', 'test@mail.me', b'User test already exist...'),
-))
+  ('test', 'password', 'test@mail.me', b'User test already exist...')),
+)
 def test_singup_validate_input(client, username, password, email, message):
   response = client.post('/auth/signup', data={'username': username, 'password': password, 'email': email})
   assert message in response.data
@@ -33,10 +34,11 @@ def test_login(client, auth):
     assert session['user_id'] == str(user.get('_id'))
     assert g.user['username'] == 'test'
 
-@pytest.mark.parametrize(('username', 'password', 'message'), (
-  ('u', 'password', b'Incorrect username.'),
-  ('test', 'p', b'Incorrect password.'),
-))
+@pytest.mark.parametrize(
+  ('username', 'password', 'message'),
+  (('u', 'password', b'Incorrect username.'),
+  ('test', 'p', b'Incorrect password.')),
+)
 def test_login_validate_input(auth, username,  password, message):
   response = auth.login(username, password)
   assert message in response.data

@@ -22,7 +22,7 @@ services:
       - DATABASE=database
     restart: on-failure
     volumes:
-      - ./:/instance
+      - ./instance:/instance/images
     ports:
       - 8000:8000
     networks:
